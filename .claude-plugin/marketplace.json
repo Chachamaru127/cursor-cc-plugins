@@ -1,0 +1,46 @@
+{
+  "name": "cursor-cc-marketplace",
+  "metadata": {
+    "description": "Cursor ↔ Claude Code 2エージェントワークフローを実現するプラグインマーケットプレース",
+    "version": "1.0.0"
+  },
+  "owner": {
+    "name": "JARVIS Project",
+    "email": "contact@vibecoding-japan.xyz"
+  },
+  "plugins": [
+    {
+      "name": "cursor-cc-plugins",
+      "source": "./",
+      "description": "Cursor（PM）と Claude Code（Worker）の2エージェント体制でプロジェクトを管理。Plans.md タスク管理、CI/CD 自動修正（3回ルール）、VibeCoder 向けセットアップを提供。",
+      "version": "1.0.0",
+      "author": {
+        "name": "JARVIS Project"
+      },
+      "homepage": "https://github.com/vibecoding-japan/cursor-cc-plugins",
+      "license": "MIT",
+      "keywords": [
+        "cursor",
+        "workflow",
+        "2-agent",
+        "plans-management",
+        "ci-cd",
+        "vibecoder",
+        "project-management"
+      ],
+      "category": "productivity",
+      "commands": [
+        "./commands/init.md",
+        "./commands/start-task.md",
+        "./commands/handoff-to-cursor.md",
+        "./commands/sync-status.md"
+      ],
+      "agents": [
+        "./agents/project-analyzer.md",
+        "./agents/ci-cd-fixer.md",
+        "./agents/project-state-updater.md"
+      ],
+      "strict": false
+    }
+  ]
+}

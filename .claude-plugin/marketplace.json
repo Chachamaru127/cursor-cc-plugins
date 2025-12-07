@@ -28,18 +28,7 @@
         "project-management"
       ],
       "category": "productivity",
-      "commands": [
-        "./commands/init.md",
-        "./commands/start-task.md",
-        "./commands/handoff-to-cursor.md",
-        "./commands/sync-status.md"
-      ],
-      "agents": [
-        "./agents/project-analyzer.md",
-        "./agents/ci-cd-fixer.md",
-        "./agents/project-state-updater.md"
-      ],
-      "strict": false
+      "strict": true
     }
   ]
 }

@@ -509,48 +509,89 @@ RESULT: Complete todo app with create, due dates, complete, and delete
 
 > **This section is optional.** Most users can use Claude Code alone. This is for teams that want to split responsibilities between Cursor and Claude Code.
 
+### How It Works
+
+**You are the hub.** Cursor and Claude Code don't communicate directly—you copy instructions and results between them.
+
+```
+┌─────────────┐          ┌─────────┐          ┌──────────────┐
+│   Cursor    │  ──────► │   You   │  ──────► │ Claude Code  │
+│   (PM)      │  Creates │  (Hub)  │  Paste   │  (Worker)    │
+│             │  task    │         │  task    │              │
+│             │ ◄────── │         │ ◄────── │              │
+│             │  Review  │         │  Copy    │              │
+│             │          │         │  result  │              │
+└─────────────┘          └─────────┘          └──────────────┘
+```
+
 ### When to Use 2-Agent Setup
 
-- Large projects with multiple developers
-- Teams that want clear separation between planning (PM) and implementation (Worker)
-- Projects requiring formal review/approval workflows
+- Large projects requiring formal planning before implementation
+- When you want Cursor to focus on architecture/review, Claude Code on coding
+- Projects requiring clear separation between planning and execution
 
 ### Roles
 
 | Agent | Role | Responsibilities |
 |-------|------|------------------|
-| **Cursor** | PM (Project Manager) | Planning, task assignment, code review, production deployment decisions |
+| **Cursor** | PM (Project Manager) | Planning, task creation, code review, production deployment decisions |
 | **Claude Code** | Worker (Developer) | Implementation, testing, staging deployment, completion reports |
+| **You** | Hub (Coordinator) | Copy tasks from Cursor → Claude Code, copy results back |
 
 ### Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         2-AGENT COLLABORATION FLOW                          │
-├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│   Cursor (PM)                              Claude Code (Worker)             │
-│       │                                           │                         │
-│       │  1. Plan feature & assign task            │                         │
-│       │  ────────────────────────────────────────>│                         │
-│       │     "Build user authentication"           │                         │
-│       │                                           │                         │
-│       │                                           │  2. /start-task         │
-│       │                                           │     /plan → /work       │
-│       │                                           │     Implement & test    │
-│       │                                           │                         │
-│       │  3. Completion report                     │                         │
-│       │  <────────────────────────────────────────│                         │
-│       │     /handoff-to-cursor                    │                         │
-│       │                                           │                         │
-│       │  4. Review & approve                      │                         │
-│       │     (or request changes)                  │                         │
-│       │                                           │                         │
-│       │  5. Deploy to production                  │                         │
-│       │     (PM responsibility)                   │                         │
-│       │                                           │                         │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                         ┌─────────────────────┐                             │
+│                         │        You          │                             │
+│                         │   (Coordinator)     │                             │
+│                         └──────────┬──────────┘                             │
+│                                    │                                        │
+│   ┌────────────────────────────────┼────────────────────────────────┐       │
+│   │                                │                                │       │
+│   ▼                                │                                ▼       │
+│ ┌──────────────────┐               │               ┌──────────────────┐     │
+│ │     Cursor       │               │               │   Claude Code    │     │
+│ │      (PM)        │               │               │    (Worker)      │     │
+│ └────────┬─────────┘               │               └────────┬─────────┘     │
+│          │                         │                        │               │
+│          │ 1. Create plan          │                        │               │
+│          │    /assign-to-cc        │                        │               │
+│          │                         │                        │               │
+│          └──────────────────────►  │ 2. Copy task           │               │
+│                                    │    to Claude Code      │               │
+│                                    │ ─────────────────────► │               │
+│                                    │                        │               │
+│                                    │                        │ 3. /start-task│
+│                                    │                        │    /plan      │
+│                                    │                        │    /work      │
+│                                    │                        │               │
+│                                    │ 4. Copy result         │               │
+│          ◄──────────────────────── │    to Cursor           │               │
+│          │                         │ ◄───────────────────── │               │
+│          │                         │    /handoff-to-cursor  │               │
+│          │ 5. Review & approve     │                        │               │
+│          │    /review-cc-work      │                        │               │
+│          │                         │                        │               │
+│          │ 6. Deploy to production │                        │               │
+│          │    (PM decision)        │                        │               │
+│          │                         │                        │               │
+└──────────┴─────────────────────────┴────────────────────────┴───────────────┘
 ```
+
+### Step-by-Step Guide
+
+| Step | Where | What to Do |
+|------|-------|------------|
+| 1 | **Cursor** | Describe what you want → Cursor creates a task with `/assign-to-cc` |
+| 2 | **You** | Copy the task instruction from Cursor |
+| 3 | **Claude Code** | Paste the task → Claude Code runs `/start-task` → implements |
+| 4 | **Claude Code** | When done, run `/handoff-to-cursor` → generates completion report |
+| 5 | **You** | Copy the completion report from Claude Code |
+| 6 | **Cursor** | Paste the report → Cursor reviews with `/review-cc-work` |
+| 7 | **Cursor** | Approve or request changes → repeat if needed |
 
 ### Setup
 

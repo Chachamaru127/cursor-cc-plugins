@@ -24,6 +24,7 @@ English | [日本語](README.ja.md)
 4. [When Things Go Wrong](#4-when-things-go-wrong) - Troubleshooting and recovery
 5. [The Complete Development Flow](#5-the-complete-development-flow) - Visual guide from idea to completion
 6. [Advanced: 2-Agent Collaboration](#6-advanced-2-agent-collaboration) - Optional Cursor + Claude Code setup
+7. [Architecture (v2)](#7-architecture-v2) - Skill/Workflow/Profile architecture and SkillPort integration
 
 ---
 
@@ -723,6 +724,89 @@ To share with your team, add to `.claude/settings.json`:
   }
 }
 ```
+
+---
+
+## 7. Architecture (v2)
+
+> **New in v2**: Modular architecture with Skill / Workflow / Profile separation. See [Architecture Documentation](docs/ARCHITECTURE.md) for full details.
+
+### Overview
+
+cursor-cc-plugins v2 introduces a 3-layer architecture:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  Profile Layer    (Who uses what)                          │
+│  cursor-pm.yaml, claude-worker.yaml                        │
+└──────────────────────────┬─────────────────────────────────┘
+                           │
+┌──────────────────────────▼─────────────────────────────────┐
+│  Workflow Layer   (How things flow)                        │
+│  init.yaml, plan.yaml, work.yaml, review.yaml              │
+└──────────────────────────┬─────────────────────────────────┘
+                           │
+┌──────────────────────────▼─────────────────────────────────┐
+│  Skill Layer      (What to do)                             │
+│  SKILL.md files with SkillPort-compatible frontmatter      │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Skill Categories
+
+| Category | Purpose | Example Skills |
+|----------|---------|----------------|
+| `core` | Base principles, safety rules | general-principles, diff-aware-editing |
+| `pm` | Planning, requirements | init-requirements, plan-feature |
+| `worker` | Implementation, testing | impl-feature, write-tests |
+| `ci` | CI failure handling | analyze-failures, fix-tests |
+
+### SkillPort Integration
+
+Skills can be shared between Cursor and Claude Code via [SkillPort](https://github.com/Chachamaru127/skillport) MCP server:
+
+```json
+// .cursor/mcp.json
+{
+  "mcpServers": {
+    "ccp-skills": {
+      "command": "uvx",
+      "args": ["skillport"],
+      "env": {
+        "SKILLPORT_SKILLS_DIR": "/path/to/cursor-cc-plugins/skills",
+        "SKILLPORT_ENABLED_CATEGORIES": "core,pm,worker,ci"
+      }
+    }
+  }
+}
+```
+
+### Extending Skills
+
+Create custom skills in `skills/{category}/{skill-name}/SKILL.md`:
+
+```markdown
+---
+name: ccp-custom-my-skill
+description: "What this skill does"
+metadata:
+  skillport:
+    category: worker
+    tags: [custom, example]
+    alwaysApply: false
+---
+
+# My Custom Skill
+
+Instructions...
+```
+
+### Simple vs Advanced Mode
+
+| Mode | Description | Who It's For |
+|------|-------------|--------------|
+| Simple | Use commands as before | Most users |
+| Advanced | Customize workflows/skills via YAML | Power users |
 
 ---
 

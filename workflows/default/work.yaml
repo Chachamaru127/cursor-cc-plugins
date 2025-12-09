@@ -1,0 +1,90 @@
+# /work ワークフロー定義
+# Plans.md の計画を実行し、実際のコードを生成
+
+phase: work
+description: "計画されたタスクを実行し、動くコードを生成するフェーズ"
+
+steps:
+  # Step 1: 現在のタスク状況を確認
+  - id: read-context
+    skill: ccp-core-read-repo-context
+    input:
+      files:
+        - Plans.md
+        - AGENTS.md
+      context_from:
+        - repo_tree
+        - git_status
+    mode: required
+
+  # Step 2: 実行対象タスクの特定
+  - id: identify-tasks
+    skill: ccp-plans-management
+    input:
+      files:
+        - Plans.md
+      context_from:
+        - user_prompt
+    output:
+      variables:
+        - target_tasks
+        - current_phase
+    mode: required
+
+  # Step 3: タスクの実行（ループ）
+  - id: execute-task
+    skill: ccp-work-impl-feature
+    input:
+      variables:
+        - target_tasks
+      context_from:
+        - tech_stack
+        - existing_code
+    output:
+      update_files:
+        - Plans.md
+      created_files: true
+    mode: required
+    loop: target_tasks
+
+  # Step 4: 動作確認
+  - id: verify-build
+    skill: ccp-verify-build
+    input:
+      commands:
+        - npm run build
+        - npm run dev
+    mode: optional
+
+  # Step 5: セルフレビュー（オプション）
+  - id: self-review
+    skill: ccp-review-changes
+    input:
+      context_from:
+        - git_diff
+    mode: optional
+
+# 成功時の出力
+on_success:
+  message: |
+    ✅ フェーズ完了！
+
+    **完了したタスク:**
+    {{completed_tasks}}
+
+    **生成されたファイル:**
+    {{created_files}}
+
+    次にやること：
+    - 「動かして」→ 動作確認
+    - 「レビューして」→ コード品質チェック
+    - 「次のフェーズへ」→ 続きを実行
+
+# エラー時の出力
+on_error:
+  skill: ccp-error-recovery
+  max_retries: 3
+  message: |
+    ⚠️ 実行中にエラーが発生しました。
+
+    自動修正を試みています...

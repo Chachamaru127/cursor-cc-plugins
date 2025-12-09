@@ -1,0 +1,125 @@
+# /review ワークフロー定義
+# 作成したコードの品質をチェック
+
+phase: review
+description: "コードの品質をチェックし、改善点を提案するフェーズ"
+
+steps:
+  # Step 1: 変更ファイルの特定
+  - id: identify-changes
+    skill: ccp-core-read-repo-context
+    input:
+      context_from:
+        - git_diff
+        - recent_commits
+    output:
+      variables:
+        - changed_files
+        - change_summary
+    mode: required
+
+  # Step 2: セキュリティチェック
+  - id: security-check
+    skill: ccp-review-security
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+    output:
+      variables:
+        - security_issues
+        - security_score
+    mode: required
+    parallel: true
+
+  # Step 3: パフォーマンスチェック
+  - id: performance-check
+    skill: ccp-review-performance
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+    output:
+      variables:
+        - performance_issues
+        - performance_score
+    mode: required
+    parallel: true
+
+  # Step 4: コード品質チェック
+  - id: quality-check
+    skill: ccp-review-quality
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+        - eslint_output
+    output:
+      variables:
+        - quality_issues
+        - quality_score
+    mode: required
+    parallel: true
+
+  # Step 5: アクセシビリティチェック（Web の場合）
+  - id: accessibility-check
+    skill: ccp-review-accessibility
+    condition: "tech_stack.includes('react') || tech_stack.includes('vue')"
+    input:
+      files: "{{changed_files}}"
+    output:
+      variables:
+        - a11y_issues
+        - a11y_score
+    mode: optional
+    parallel: true
+
+  # Step 6: レビュー結果の集約
+  - id: aggregate-results
+    skill: ccp-review-aggregate
+    input:
+      variables:
+        - security_issues
+        - performance_issues
+        - quality_issues
+        - a11y_issues
+    output:
+      variables:
+        - overall_grade
+        - improvement_suggestions
+    mode: required
+
+  # Step 7: 改善の適用（ユーザー承認後）
+  - id: apply-improvements
+    skill: ccp-review-apply-fixes
+    condition: "user_approved"
+    input:
+      variables:
+        - improvement_suggestions
+    output:
+      update_files: true
+    mode: optional
+
+# 成功時の出力
+on_success:
+  message: |
+    📊 コードレビュー結果
+
+    **総合評価**: {{overall_grade}}
+
+    | 観点 | 評価 |
+    |------|------|
+    | セキュリティ | {{security_score}} |
+    | パフォーマンス | {{performance_score}} |
+    | コード品質 | {{quality_score}} |
+
+    {{improvement_suggestions}}
+
+    自動で修正しますか？
+
+# エラー時の出力
+on_error:
+  message: |
+    ⚠️ レビュー中にエラーが発生しました。
+
+    手動で確認してください。

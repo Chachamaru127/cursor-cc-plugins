@@ -1,0 +1,107 @@
+# /init ワークフロー定義
+# 新規プロジェクトまたは既存プロジェクトへのワークフロー追加
+
+phase: init
+description: "プロジェクトを初期化し、開発ワークフローをセットアップする"
+
+steps:
+  # Step 1: リポジトリコンテキストの読み取り
+  - id: read-context
+    skill: ccp-core-read-repo-context
+    input:
+      files:
+        - README.md
+        - package.json
+        - AGENTS.md
+        - Plans.md
+      context_from:
+        - repo_tree
+        - git_status
+    output:
+      variables:
+        - project_type  # new | existing
+        - tech_stack
+    mode: required
+
+  # Step 2: 要件のヒアリング（新規プロジェクトの場合）
+  - id: init-requirements
+    skill: ccp-init-requirements
+    condition: "project_type == 'new'"
+    input:
+      context_from:
+        - user_prompt
+        - previous_step_output
+    output:
+      variables:
+        - project_name
+        - tech_choice
+        - initial_tasks
+    mode: required
+
+  # Step 3: プロジェクトの生成（新規の場合）
+  - id: scaffold-project
+    skill: ccp-project-scaffolder
+    condition: "project_type == 'new'"
+    input:
+      variables:
+        - project_name
+        - tech_choice
+      context_from:
+        - config_file  # cursor-cc.config.json
+    output:
+      update_files:
+        - package.json
+        - src/
+    mode: required
+
+  # Step 4: ワークフローファイルの生成
+  - id: generate-workflow-files
+    skill: ccp-generate-workflow-files
+    input:
+      templates:
+        - generators/agents.md.tpl
+        - generators/plans.md.tpl
+      context_from:
+        - project_context
+    output:
+      create_files:
+        - AGENTS.md
+        - CLAUDE.md
+        - Plans.md
+    mode: required
+
+  # Step 5: 計画のレビュー（オプション）
+  - id: review-plan
+    skill: ccp-plan-review
+    input:
+      files:
+        - Plans.md
+    mode: optional
+
+  # Step 6: 次のアクション案内
+  - id: next-action-guide
+    skill: ccp-vibecoder-guide
+    input:
+      context_from:
+        - completed_steps
+        - plans_md
+    output:
+      user_message: true
+    mode: required
+
+# 成功時の出力
+on_success:
+  message: |
+    ✅ プロジェクトを初期化しました！
+
+    次にやること：
+    - 「動かして」→ 開発サーバーを起動
+    - 「フェーズ1を始めて」→ 最初のタスクを実行
+    - 「計画を見せて」→ Plans.md を確認
+
+# エラー時の出力
+on_error:
+  message: |
+    ⚠️ 初期化中にエラーが発生しました。
+
+    詳細を確認して、「もう一度」と言ってください。

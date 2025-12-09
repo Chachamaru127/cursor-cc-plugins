@@ -24,6 +24,7 @@ VibeCoder（技術知識がなくても開発したい人）向けの Claude Cod
 4. [問題が起きたとき](#4-問題が起きたとき) - トラブルシューティングと復旧
 5. [開発フローの全体像](#5-開発フローの全体像) - アイデアから完成までの流れ
 6. [上級編：2エージェント協調](#6-上級編2エージェント協調) - Cursor + Claude Code のオプション設定
+7. [アーキテクチャ (v2)](#7-アーキテクチャ-v2) - Skill/Workflow/Profile アーキテクチャと SkillPort 連携
 
 ---
 
@@ -721,6 +722,89 @@ Claude Code (VibeCoder ガイド):
   }
 }
 ```
+
+---
+
+## 7. アーキテクチャ (v2)
+
+> **v2 の新機能**: Skill / Workflow / Profile 分離によるモジュラーアーキテクチャ。詳細は [Architecture Documentation](docs/ARCHITECTURE.md) を参照。
+
+### 概要
+
+cursor-cc-plugins v2 は3層アーキテクチャを導入:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  Profile 層    (誰が何を使うか)                             │
+│  cursor-pm.yaml, claude-worker.yaml                        │
+└──────────────────────────┬─────────────────────────────────┘
+                           │
+┌──────────────────────────▼─────────────────────────────────┐
+│  Workflow 層   (どう流れるか)                               │
+│  init.yaml, plan.yaml, work.yaml, review.yaml              │
+└──────────────────────────┬─────────────────────────────────┘
+                           │
+┌──────────────────────────▼─────────────────────────────────┐
+│  Skill 層      (何をするか)                                 │
+│  SkillPort互換フロントマター付きの SKILL.md ファイル         │
+└────────────────────────────────────────────────────────────┘
+```
+
+### スキルカテゴリ
+
+| カテゴリ | 目的 | スキル例 |
+|---------|------|---------|
+| `core` | 基本原則、安全ルール | general-principles, diff-aware-editing |
+| `pm` | 計画、要件整理 | init-requirements, plan-feature |
+| `worker` | 実装、テスト | impl-feature, write-tests |
+| `ci` | CI失敗対応 | analyze-failures, fix-tests |
+
+### SkillPort 連携
+
+[SkillPort](https://github.com/Chachamaru127/skillport) MCP サーバー経由で Cursor と Claude Code 間でスキルを共有:
+
+```json
+// .cursor/mcp.json
+{
+  "mcpServers": {
+    "ccp-skills": {
+      "command": "uvx",
+      "args": ["skillport"],
+      "env": {
+        "SKILLPORT_SKILLS_DIR": "/path/to/cursor-cc-plugins/skills",
+        "SKILLPORT_ENABLED_CATEGORIES": "core,pm,worker,ci"
+      }
+    }
+  }
+}
+```
+
+### スキルの拡張
+
+`skills/{category}/{skill-name}/SKILL.md` にカスタムスキルを作成:
+
+```markdown
+---
+name: ccp-custom-my-skill
+description: "このスキルの説明"
+metadata:
+  skillport:
+    category: worker
+    tags: [custom, example]
+    alwaysApply: false
+---
+
+# My Custom Skill
+
+スキルの内容...
+```
+
+### シンプルモード vs アドバンスドモード
+
+| モード | 説明 | 対象ユーザー |
+|--------|------|-------------|
+| シンプル | 従来通りコマンドを使用 | ほとんどのユーザー |
+| アドバンスド | YAML でワークフロー/スキルをカスタマイズ | パワーユーザー |
 
 ---
 

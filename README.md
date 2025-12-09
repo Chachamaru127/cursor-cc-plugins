@@ -69,6 +69,31 @@ English | [日本語](README.ja.md)
 
 **Breaking changes**: None. Simple mode = same as v2.
 
+### What Changed (Before/After)
+
+**Commands** - No change needed:
+```
+# v2 (still works in v3)        # v3 (same behavior)
+/init                      →    /init
+/plan                      →    /plan
+/work                      →    /work
+"Add login feature"        →    "Add login feature"
+```
+
+**New in v3** - Optional features:
+```
+# v2: No safety config
+# v3: Add cursor-cc.config.json for team guardrails
+{
+  "safety": { "mode": "apply-local" },
+  "git": { "protected_branches": ["main"] }
+}
+
+# v2: Skills embedded in plugin
+# v3: Skills are editable SKILL.md files
+skills/worker/ccp-my-custom-skill/SKILL.md  ← Create your own!
+```
+
 ---
 
 ## Table of Contents
@@ -834,6 +859,35 @@ cursor-cc-plugins v3 introduces a 3-layer architecture:
 | Skill sharing | Local only | Team-wide distribution |
 | Multi-tool support | Claude Code only | Cursor + Claude Code + other MCP clients |
 | Best for | Personal use | Team / Enterprise |
+
+**Concrete Benefits of SkillPort:**
+
+```
+Without SkillPort (Individual):
+┌─────────────────┐
+│  Your Machine   │
+│  └── skills/    │  ← Only you can use these
+└─────────────────┘
+
+With SkillPort (Team):
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Alice (Cursor) │     │  Bob (Claude)   │     │  CI Server      │
+│       ↓         │     │       ↓         │     │       ↓         │
+└────────┬────────┘     └────────┬────────┘     └────────┬────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 ▼
+                    ┌─────────────────────────┐
+                    │  Shared skills/ repo    │
+                    │  • Consistent reviews   │  ← Everyone uses same rules
+                    │  • Unified code style   │
+                    │  • Company standards    │
+                    └─────────────────────────┘
+```
+
+**Example: Team Code Review Consistency**
+- Without: Alice's review checks 5 things, Bob's checks 3 different things
+- With: Everyone uses `ccp-review-security` → same 10 security checks for all
 
 Skills can be shared between Cursor and Claude Code via [SkillPort](https://github.com/Chachamaru127/skillport) MCP server:
 

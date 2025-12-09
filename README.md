@@ -85,7 +85,9 @@ English | [日本語](README.ja.md)
 /setup-2agent
 ```
 
-This creates: `AGENTS.md`, `Plans.md`, `.cursor/commands/`
+This creates: `AGENTS.md`, `Plans.md`, `.cursor/commands/`, `.cursor-cc-version`
+
+> **Note**: `/setup-2agent` is for **plugin initialization** (one-time). If you want to create a new project from scratch, run `/init` after this step.
 
 #### Step 3: Start Development (Cursor)
 
@@ -125,16 +127,27 @@ Cursor を使えない環境や、簡単なプロトタイプ用の**サブモ�
 
 ## 3. Commands
 
+### ⚠️ `/setup-2agent` vs `/init`
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/setup-2agent` | Plugin initialization | **First time after install** (one-time) |
+| `/init` | Create new project | When starting a new app from scratch |
+
+**Correct order**: `/setup-2agent` → `/init` (if new project) → `/plan` + `/work`
+
+### All Commands
+
 | Command | Who Uses | What It Does |
 |---------|----------|--------------|
-| `/init` | Claude Code | プロジェクト作成・セットアップ |
+| `/setup-2agent` | Claude Code | **プラグイン初期設定**（最初に1回） |
+| `/init` | Claude Code | 新規プロジェクト作成 |
 | `/plan` | Both | 機能をタスクに分解 |
 | `/work` | Claude Code | タスクを実行してコード生成 |
 | `/review` | Both | コード品質チェック |
 | `/sync-status` | Both | 進捗状況を確認 |
 | `/start-task` | Claude Code | PM からのタスクを開始 |
 | `/handoff-to-cursor` | Claude Code | 完了報告を生成 |
-| `/setup-2agent` | Claude Code | 2-Agent 用ファイルを生成 |
 
 ### Cursor Commands (after /setup-2agent)
 
@@ -234,8 +247,22 @@ Profile (誰が使うか)  →  Workflow (どう流れるか)  →  Skill (何�
 | Question | Answer |
 |----------|--------|
 | Does my project break? | **No** - v2 commands work the same |
-| What's new? | Safety config, Skill/Workflow/Profile architecture |
+| What's new? | Safety config, Skill/Workflow/Profile architecture, Version tracking |
 | Do I need to change? | Only for Advanced features |
+
+### Version Tracking (New in v3)
+
+When you run `/setup-2agent`, a `.cursor-cc-version` file is created. This enables:
+
+- **Update notifications**: When plugin updates, you'll see "⚠️ Update available (v2.x → v3.x)"
+- **Skip redundant setup**: If already latest version, setup is skipped by default
+- **Automatic version management**: No manual tracking needed
+
+```bash
+# After plugin update
+/plugin update cursor-cc-plugins
+/setup-2agent   # Will detect update and prompt to apply
+```
 
 ---
 

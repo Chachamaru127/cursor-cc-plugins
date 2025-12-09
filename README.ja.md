@@ -85,7 +85,9 @@ Plans.md と共通のスキルレイヤーを共有しながら、Cursor が要�
 /setup-2agent
 ```
 
-作成されるファイル: `AGENTS.md`, `Plans.md`, `.cursor/commands/`
+作成されるファイル: `AGENTS.md`, `Plans.md`, `.cursor/commands/`, `.cursor-cc-version`
+
+> **Note**: `/setup-2agent` は**プラグインの初期設定**です（1回のみ）。新しいプロジェクトを1から作る場合は、この後に `/init` を実行します。
 
 #### Step 3: 開発開始 (Cursor)
 
@@ -125,16 +127,27 @@ Cursor を使えない環境や、簡単なプロトタイプ用の**サブモ�
 
 ## 3. コマンド
 
+### ⚠️ `/setup-2agent` と `/init` の違い
+
+| コマンド | 目的 | いつ使う |
+|---------|------|---------|
+| `/setup-2agent` | プラグイン初期設定 | **インストール直後（1回のみ）** |
+| `/init` | 新規プロジェクト作成 | 新しいアプリを1から作る時 |
+
+**正しい順序**: `/setup-2agent` → `/init`（新規の場合）→ `/plan` + `/work`
+
+### 全コマンド一覧
+
 | コマンド | 誰が使う | 何をするか |
 |---------|----------|-----------|
-| `/init` | Claude Code | プロジェクト作成・セットアップ |
+| `/setup-2agent` | Claude Code | **プラグイン初期設定**（最初に1回） |
+| `/init` | Claude Code | 新規プロジェクト作成 |
 | `/plan` | 両方 | 機能をタスクに分解 |
 | `/work` | Claude Code | タスクを実行してコード生成 |
 | `/review` | 両方 | コード品質チェック |
 | `/sync-status` | 両方 | 進捗状況を確認 |
 | `/start-task` | Claude Code | PM からのタスクを開始 |
 | `/handoff-to-cursor` | Claude Code | 完了報告を生成 |
-| `/setup-2agent` | Claude Code | 2-Agent 用ファイルを生成 |
 
 ### Cursor コマンド (/setup-2agent 実行後)
 
@@ -234,8 +247,22 @@ Profile (誰が使うか)  →  Workflow (どう流れるか)  →  Skill (何�
 | 質問 | 回答 |
 |------|------|
 | プロジェクトが壊れる？ | **いいえ** - v2 のコマンドはそのまま動く |
-| v3 で何が変わった？ | セーフティ設定、Skill/Workflow/Profile アーキテクチャ |
+| v3 で何が変わった？ | セーフティ設定、Skill/Workflow/Profile アーキテクチャ、バージョン管理 |
 | 何か変更が必要？ | アドバンスド機能を使いたい場合のみ |
+
+### バージョン管理機能 (v3 新機能)
+
+`/setup-2agent` 実行時に `.cursor-cc-version` ファイルが作成されます：
+
+- **更新通知**: プラグイン更新後に「⚠️ 更新があります (v2.x → v3.x)」と表示
+- **重複セットアップ防止**: 最新バージョンの場合はスキップ
+- **自動バージョン管理**: 手動での追跡は不要
+
+```bash
+# プラグイン更新後
+/plugin update cursor-cc-plugins
+/setup-2agent   # 更新を検出して適用を促す
+```
 
 ---
 

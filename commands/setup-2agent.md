@@ -11,20 +11,24 @@ Cursor (PM) と Claude Code (Worker) の2エージェント体制を一発でセ
 - **Cursor側設定も生成**: `.cursor/commands/` にPM用コマンドを配置
 - **テンプレートベース**: `templates/` の詳細版テンプレートを使用
 - **バージョン管理**: 更新が必要な場合に通知
+- **Case-Insensitive検出**: `plans.md` / `Plans.md` / `PLANS.MD` を同一視
+- **既存ファイル対応**: 既存がある場合は `/update-2agent` を案内
 
 ---
 
-## ⚠️ `/init` との違い
+## ⚠️ 他のコマンドとの違い
 
 | コマンド | 目的 | いつ使う |
 |---------|------|---------|
-| **`/setup-2agent`** | 2-Agent体制のファイルセットアップ | プラグイン導入直後（1回） |
+| **`/setup-2agent`** | 2-Agent体制の**初回**セットアップ | プラグイン導入直後（1回） |
+| `/update-2agent` | 既存環境の**更新** | プラグイン更新後 |
 | `/init` | 新規プロジェクト作成 | 新しいアプリを作りたい時 |
 
 **正しい順序**:
-1. `/setup-2agent` - 2-Agent 用ファイルをセットアップ
+1. `/setup-2agent` - 2-Agent 用ファイルをセットアップ（初回のみ）
 2. `/init` - 新しいプロジェクトを作成（必要な場合のみ）
 3. `/plan` + `/work` - 機能追加
+4. `/update-2agent` - プラグイン更新時に実行
 
 ---
 
@@ -66,16 +70,49 @@ Cursor (PM) と Claude Code (Worker) の2エージェント体制を一発でセ
 > **Note**: このコマンドは `workflows/default/setup-2agent.yaml` に従って実行されます。
 > 詳細な手順は各スキル（`ccp-generate-workflow-files`, `ccp-setup-2agent-files`）で定義されています。
 
-### Phase 1: 状態確認
+### Phase 0: Case-Insensitive ファイル検出
 
-1. `.cursor-cc-version` をチェックしてセットアップ状態を判定
-2. プラグインバージョンと比較
+**重要**: ファイル名の大文字小文字の違いを吸収する
+
+```bash
+# Case-insensitive でファイルを検索
+find . -maxdepth 1 -iname "agents.md" -type f 2>/dev/null | head -1
+find . -maxdepth 1 -iname "claude.md" -type f 2>/dev/null | head -1
+find . -maxdepth 1 -iname "plans.md" -type f 2>/dev/null | head -1
+```
+
+検出パターン（すべて同一ファイルとして扱う）:
+- `AGENTS.md`, `agents.md`, `Agents.md`
+- `CLAUDE.md`, `claude.md`, `Claude.md`
+- `PLANS.md`, `plans.md`, `Plans.md`
+
+### Phase 1: 状態確認と分岐
+
+1. Case-insensitive で既存ファイルを検出
+2. `.cursor-cc-version` をチェックしてセットアップ状態を判定
+3. プラグインバージョンと比較
 
 | 状態 | 判定 | 動作 |
 |------|------|------|
 | ファイルなし | 新規セットアップ | 全ファイル作成 |
-| 同じバージョン | 最新 | スキップ（上書き確認） |
-| 古いバージョン | 更新あり | 更新を適用 |
+| 既存あり・古いバージョン | 更新が必要 | **`/update-2agent` を案内** |
+| 既存あり・同じバージョン | 最新 | スキップ（上書き確認） |
+
+**既存ファイルがある場合の動作**:
+
+```
+⚠️ 既存の2エージェント体制が検出されました
+
+検出ファイル:
+- ./agents.md (推奨: AGENTS.md)
+- ./Plans.md ✓
+- .cursor-cc-version (v0.3.2)
+
+更新する場合は `/update-2agent` を実行してください。
+（タスク等のユーザーデータを保持しながら更新します）
+
+強制的に上書きする場合は「上書きして」と言ってください。
+```
 
 ### Phase 2: ワークフローファイル生成
 
@@ -111,14 +148,18 @@ Cursor (PM) と Claude Code (Worker) の2エージェント体制を一発でセ
 | ファイル | 役割 |
 |---------|------|
 | `workflows/default/setup-2agent.yaml` | ワークフロー定義 |
+| `workflows/default/update-2agent.yaml` | 更新ワークフロー定義 |
 | `skills/core/ccp-generate-workflow-files/SKILL.md` | AGENTS.md等の生成スキル |
 | `skills/core/ccp-setup-2agent-files/SKILL.md` | Cursorコマンド等の配置スキル |
+| `skills/core/ccp-update-2agent-files/SKILL.md` | 更新スキル |
+| `skills/core/ccp-merge-plans/SKILL.md` | Plans.mdマージスキル |
 | `templates/` | テンプレートファイル |
 
 ---
 
 ## 注意事項
 
-- 既存の AGENTS.md, CLAUDE.md, Plans.md がある場合は上書き確認
+- **既存ファイルがある場合**: `/update-2agent` を使用（タスクを保持）
+- **ファイル名の大文字小文字**: Case-insensitive で検出し、正規化を提案
 - Cursor のカスタムコマンドは `.cursor/commands/` に配置
 - Plans.md は両エージェントで共有・編集

@@ -94,24 +94,62 @@ steps:
         - normalized_files  # リネームされたファイル
     mode: required
 
-  # Step 6: Cursor コマンド・バージョンファイルの更新
-  - id: update-support-files
+  # Step 6: Cursor コマンドの更新（全5ファイル）
+  - id: update-cursor-commands
     skill: ccp-setup-2agent-files
     condition: "should_proceed"
     input:
       templates:
+        - templates/cursor/commands/start-session.md
+        - templates/cursor/commands/project-overview.md
+        - templates/cursor/commands/plan-with-cc.md
         - templates/cursor/commands/assign-to-cc.md
         - templates/cursor/commands/review-cc-work.md
       variables:
         - plugin_version
         - date
         - project_name
-        - installed_version  # 更新元バージョン
+        - installed_version
       update_mode: true
     output:
       create_files:
+        - .cursor/commands/start-session.md
+        - .cursor/commands/project-overview.md
+        - .cursor/commands/plan-with-cc.md
         - .cursor/commands/assign-to-cc.md
         - .cursor/commands/review-cc-work.md
+    mode: required
+
+  # Step 7: Hooks 設定の更新（v0.3.7+）
+  - id: update-hooks
+    skill: ccp-setup-2agent-files
+    condition: "should_proceed"
+    input:
+      templates:
+        - templates/hooks/auto-cleanup-hook.sh
+        - templates/.cursor-cc-config.yaml.template
+      variables:
+        - plugin_version
+    output:
+      create_files:
+        - .claude/scripts/auto-cleanup-hook.sh
+        - .cursor-cc-config.yaml
+      configure:
+        - .claude/settings.json
+    mode: optional
+
+  # Step 8: バージョンファイルの更新
+  - id: update-version-file
+    skill: ccp-setup-2agent-files
+    condition: "should_proceed"
+    input:
+      variables:
+        - plugin_version
+        - date
+        - installed_version
+      update_mode: true
+    output:
+      create_files:
         - .cursor-cc-version
     mode: required
 
@@ -120,21 +158,49 @@ on_success:
   message: |
     ✅ **2エージェント体制を更新しました！** (v{{installed_version}} → v{{plugin_version}})
 
-    📝 **更新内容**:
-    - AGENTS.md: 構造を更新
-    - CLAUDE.md: 構造を更新
-    - Plans.md: タスクを保持しつつ構造を更新
-    - .cursor/commands/: 最新版に更新
+    ---
 
-    📋 **保持されたタスク**:
+    ## 📋 このバージョンの変更点
+
+    **v0.3.7 の新機能:**
+    - 🧹 自動整理機能（PostToolUse Hooks）
+    - `/cleanup` コマンド追加
+    - `.cursor-cc-config.yaml` で閾値カスタマイズ可能
+
+    **v0.3.6 の新機能:**
+    - `/start-session` 統合フロー
+    - Cursor コマンド 5つに拡充
+    - ソロ/2エージェントモード説明追加
+
+    ---
+
+    ## 📝 更新されたファイル
+
+    | ファイル | 内容 |
+    |---------|------|
+    | AGENTS.md | 構造を更新 |
+    | CLAUDE.md | 構造を更新 |
+    | Plans.md | タスク保持 + 構造更新 |
+    | .cursor/commands/ | 5ファイルに拡充 |
+    | .claude/scripts/ | 自動整理スクリプト追加 |
+    | .cursor-cc-config.yaml | 設定ファイル追加 |
+
+    ---
+
+    ## 📋 保持されたタスク
+
     - 進行中: {{tasks_preserved.wip}}件
     - 未着手: {{tasks_preserved.todo}}件
     - 完了: {{tasks_preserved.done}}件
     - アーカイブ: {{tasks_preserved.archive}}件
 
+    ---
+
     📦 **バックアップ**: `{{backup_path}}`
 
     💡 問題があればバックアップから復元できます
+
+    🚀 **次のステップ**: Cursor で `/start-session` を実行
 
 # セットアップされていない場合
 on_not_installed:

@@ -158,15 +158,36 @@ sed -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
 [ -n "$PLANS_FILE" ] && [ "$PLANS_FILE" != "./Plans.md" ] && rm "$PLANS_FILE"
 ```
 
-### Step 6: Cursor コマンドの更新
+### Step 6: Cursor コマンドの更新（全5ファイル）
 
 ```bash
 mkdir -p .cursor/commands
+cp "$PLUGIN_PATH/templates/cursor/commands/start-session.md" .cursor/commands/
+cp "$PLUGIN_PATH/templates/cursor/commands/project-overview.md" .cursor/commands/
+cp "$PLUGIN_PATH/templates/cursor/commands/plan-with-cc.md" .cursor/commands/
 cp "$PLUGIN_PATH/templates/cursor/commands/assign-to-cc.md" .cursor/commands/
 cp "$PLUGIN_PATH/templates/cursor/commands/review-cc-work.md" .cursor/commands/
 ```
 
-### Step 7: バージョンファイルの更新
+### Step 7: Hooks 設定の更新（v0.3.7+）
+
+```bash
+# スクリプトディレクトリ作成
+mkdir -p .claude/scripts
+
+# Hook スクリプトをコピー
+cp "$PLUGIN_PATH/templates/hooks/auto-cleanup-hook.sh" .claude/scripts/
+chmod +x .claude/scripts/auto-cleanup-hook.sh
+
+# 設定ファイルをコピー（存在しない場合のみ）
+[ ! -f .cursor-cc-config.yaml ] && \
+  cp "$PLUGIN_PATH/templates/.cursor-cc-config.yaml.template" .cursor-cc-config.yaml
+
+# .claude/settings.json を更新（既存設定を保持しつつ hooks を追加）
+# 注: 既存の settings.json がある場合はマージが必要
+```
+
+### Step 8: バージョンファイルの更新
 
 ```bash
 cat > .cursor-cc-version << EOF

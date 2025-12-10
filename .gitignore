@@ -30,3 +30,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Test sandbox (for plugin development)
+/test-sandbox/

@@ -5,6 +5,33 @@
 
 ---
 
+## ⚠️ 実行手順（必須）
+
+**このコマンドを実行する際、以下の手順を必ず実行すること：**
+
+### Step 1: アップデートスクリプトを実行
+
+```bash
+~/.claude/plugins/marketplaces/cursor-cc-marketplace/scripts/update-2agent.sh
+```
+
+### Step 2: 検証チェックリストを確認
+
+スクリプト実行後、以下のファイルが存在することを確認：
+
+- [ ] `.cursor/commands/start-session.md`
+- [ ] `.cursor/commands/assign-to-cc.md`
+- [ ] `.cursor/commands/review-cc-work.md`
+- [ ] `.cursor/commands/plan-with-cc.md`
+- [ ] `.cursor/commands/project-overview.md`
+- [ ] `.claude/rules/workflow.md`
+- [ ] `.claude/rules/coding-standards.md`
+- [ ] `.cursor-cc-version`
+
+**全てのチェックが通るまで完了とみなさないこと。**
+
+---
+
 ## `/setup-2agent` との違い
 
 | コマンド | 用途 | 既存ファイル |

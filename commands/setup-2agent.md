@@ -5,6 +5,44 @@ Cursor (PM) と Claude Code (Worker) の2エージェント体制を一発でセ
 
 ---
 
+## ⚠️ 実行手順（必須）
+
+**このコマンドを実行する際、以下の手順を必ず実行すること：**
+
+### Step 1: セットアップスクリプトを実行
+
+```bash
+~/.claude/plugins/marketplaces/cursor-cc-marketplace/scripts/setup-2agent.sh
+```
+
+### Step 2: AGENTS.md, CLAUDE.md, Plans.md を生成
+
+スクリプト実行後、テンプレートを使って以下を生成：
+- AGENTS.md ← `templates/AGENTS.md.template`
+- CLAUDE.md ← `templates/CLAUDE.md.template`
+- Plans.md ← `templates/Plans.md.template`
+
+### Step 3: 検証チェックリストを確認
+
+以下のファイルが存在することを確認：
+
+- [ ] `.cursor/commands/start-session.md`
+- [ ] `.cursor/commands/assign-to-cc.md`
+- [ ] `.cursor/commands/review-cc-work.md`
+- [ ] `.cursor/commands/plan-with-cc.md`
+- [ ] `.cursor/commands/project-overview.md`
+- [ ] `.claude/rules/workflow.md`
+- [ ] `.claude/rules/coding-standards.md`
+- [ ] `.claude/memory/session-log.md`
+- [ ] `.cursor-cc-version`
+- [ ] `AGENTS.md`
+- [ ] `CLAUDE.md`
+- [ ] `Plans.md`
+
+**全てのチェックが通るまで完了とみなさないこと。**
+
+---
+
 ## このコマンドの特徴
 
 - **ワンコマンドセットアップ**: 必要なファイルを全て自動生成

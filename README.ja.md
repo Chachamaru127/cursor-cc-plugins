@@ -5,15 +5,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://docs.anthropic.com/en/docs/claude-code)
 [![2-Agent](https://img.shields.io/badge/2--Agent-Workflow-orange)](docs/usage-2agent.md)
-[![Version](https://img.shields.io/badge/version-0.3.9-green)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.5-green)](CHANGELOG.md)
 
 **Cursor（PM）が計画。Claude Code（Worker）が実装。2つのAI、1つのシームレスなワークフロー。**
 
 このプラグインは **2エージェント開発ワークフロー** を実現します。Cursorが計画・タスク分解・レビューを担当し、Claude Codeが実装・テスト・stagingデプロイを担当します。Soloモード（Claude Code単体）もフォールバックとして利用可能です。
 
 [English](README.md) | 日本語
-
-![Cursor が計画、Claude Code が構築](docs/images/workflow-ja.png)
 
 ---
 
@@ -44,17 +42,38 @@ Cursor: 「レビューOK。デプロイしましょう」
 ### Step 1: インストール
 
 ```bash
-/plugin marketplace add Chachamaru127/cursor-cc-plugins
-/plugin install cursor-cc-plugins
+/install cursor-cc-plugins
 ```
 
-### Step 2: セットアップ ⭐
+### Step 2: セットアップ
 
 ```bash
 /setup-2agent
 ```
 
-生成されるファイル: `AGENTS.md`, `Plans.md`, `.cursor/commands/`
+生成されるファイル:
+```
+./
+├── AGENTS.md              # 開発フロー概要（共有）
+├── CLAUDE.md              # Claude Code 専用設定
+├── Plans.md               # タスク管理（共有）
+├── .cursor-cc-version     # バージョン管理
+├── .cursor/
+│   └── commands/          # Cursor PM コマンド
+│       ├── start-session.md
+│       ├── handoff-to-claude.md
+│       ├── review-cc-work.md
+│       ├── plan-with-cc.md
+│       └── project-overview.md
+└── .claude/
+    ├── rules/             # ワークフロールール (v0.4.0+)
+    │   ├── workflow.md
+    │   └── coding-standards.md
+    └── memory/            # セッションメモリ
+        ├── session-log.md
+        ├── decisions.md
+        └── patterns.md
+```
 
 ### Step 3: Cursor で開始
 
@@ -79,7 +98,7 @@ Cursor: 「いいですね！タスクに分解しますね...」
 │  • レビュー     │ ◄──────────────────► │  • テスト       │
 │  • 本番デプロイ │                      │  • Staging      │
 └────────┬────────┘                      └────────┬────────┘
-         │   /handoff-to-claude                        │
+         │   /handoff-to-claude                   │
          └───────────────────────────────────────►│
          │◄───────────────────────────────────────┘
          │   /handoff-to-cursor
@@ -121,6 +140,28 @@ Cursor: 「いいですね！タスクに分解しますね...」
 
 ---
 
+## 機能
+
+### コア機能
+- **2エージェントワークフロー**: PM/Worker の役割分担で責務を明確化
+- **セーフティファースト**: デフォルトで dry-run モード、保護ブランチ、3回ルール
+- **VibeCoder フレンドリー**: 非技術者向けの自然言語インターフェース
+- **差分更新**: `/update-2agent` でシームレスなバージョンアップグレード
+
+### v0.4.0+ 新機能
+- **Claude Rules** (`.claude/rules/`): YAML frontmatter `paths:` で条件付きルール適用
+- **Plugin Hooks** (`hooks/hooks.json`): SessionStart / PostToolUse フックで自動化
+- **Named Sessions**: `/rename {名前}` と `/resume {名前}` でセッション追跡
+- **Session Memory** (`.claude/memory/`): 決定事項・パターン・セッションログを永続化
+- **CI 整合性チェック**: プラグインの整合性を自動検証
+- **Self-Healing CI**: `scripts/ci/diagnose-and-fix.sh` で問題の自動検出と修正
+
+### 自動整理機能 (v0.3.7+)
+- PostToolUse フックによる自動ファイルサイズ監視
+- `.cursor-cc-config.yaml` で閾値をカスタマイズ可能
+
+---
+
 ## Solo モード（フォールバック）
 
 Cursor がない？Claude Code 単体でも動きます：
@@ -135,14 +176,15 @@ Solo モードはシンプルですが、PM/Worker分離やクロスレビュー
 
 ---
 
-## 機能
+## 更新方法
 
-- **2エージェントワークフロー**: PM/Worker の役割分担で責務を明確化
-- **セーフティファースト**: デフォルトで dry-run モード、保護ブランチ、3回ルール
-- **VibeCoder フレンドリー**: 非技術者向けの自然言語インターフェース
-- **自動整理機能** (v0.3.7+): PostToolUse フックによる自動ファイルサイズ監視
-- **差分更新**: `/update-2agent` でシームレスなバージョンアップグレード
-- **カスタマイズ可能**: `cursor-cc.config.json` でチーム固有の設定
+新しいバージョンがリリースされたら：
+
+```bash
+/update-2agent
+```
+
+Plans.md のタスクを保持しながら、テンプレートとコマンドを更新します。
 
 ---
 
@@ -153,8 +195,7 @@ Solo モードはシンプルですが、PM/Worker分離やクロスレビュー
 | [2エージェントガイド](docs/usage-2agent.md) | ワークフローの詳細 |
 | [Soloガイド](docs/usage-solo.md) | Claude Code 単体 |
 | [管理者ガイド](docs/ADMIN_GUIDE.md) | チーム導入・安全設定 |
-| [アーキテクチャ](docs/ARCHITECTURE.md) | 技術的な内部構造 |
-| [制限事項](docs/LIMITATIONS.md) | 既知の制約 |
+| [変更履歴](CHANGELOG.md) | バージョン履歴 |
 
 ---
 

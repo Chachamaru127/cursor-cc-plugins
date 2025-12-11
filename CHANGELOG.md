@@ -4,6 +4,23 @@ cursor-cc-plugins のバージョン履歴です。
 
 ---
 
+## [0.4.5] - 2025-12-11
+
+### Added
+- 📖 **CI README バージョンチェック**
+  - `readme-version-sync` ジョブを追加
+  - README.md / README.ja.md のバージョンバッジが VERSION ファイルと一致するか検証
+  - 修正方法も提示
+
+### Changed
+- 📄 **README 大幅更新**
+  - 実装の実態に合わせてドキュメントを刷新
+  - v0.4.0+ 新機能セクション追加（Claude Rules, Plugin Hooks, Named Sessions, Session Memory, CI チェック, Self-Healing CI）
+  - ファイル構成図を更新（`.claude/rules/`, `.claude/memory/` を追加）
+  - インストールコマンドを `/install cursor-cc-plugins` 形式に統一
+
+---
+
 ## [0.4.4] - 2025-12-11
 
 ### Changed

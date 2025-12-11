@@ -5,15 +5,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://docs.anthropic.com/en/docs/claude-code)
 [![2-Agent](https://img.shields.io/badge/2--Agent-Workflow-orange)](docs/usage-2agent.md)
-[![Version](https://img.shields.io/badge/version-0.3.9-green)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.5-green)](CHANGELOG.md)
 
 **Cursor (PM) plans. Claude Code (Worker) builds. Two AIs, one seamless workflow.**
 
 This plugin enables a **2-agent development workflow** where Cursor handles planning, task breakdown, and review, while Claude Code handles implementation, testing, and staging deployment. Solo mode (Claude Code only) is also available as a fallback.
 
 [English](README.md) | [日本語](README.ja.md)
-
-![Cursor plans, Claude Code builds](docs/images/workflow-en.png)
 
 ---
 
@@ -44,17 +42,38 @@ Cursor: "Review passed. Let's deploy."
 ### Step 1: Install
 
 ```bash
-/plugin marketplace add Chachamaru127/cursor-cc-plugins
-/plugin install cursor-cc-plugins
+/install cursor-cc-plugins
 ```
 
-### Step 2: Setup ⭐
+### Step 2: Setup
 
 ```bash
 /setup-2agent
 ```
 
-Creates: `AGENTS.md`, `Plans.md`, `.cursor/commands/`
+This creates:
+```
+./
+├── AGENTS.md              # Development flow overview (shared)
+├── CLAUDE.md              # Claude Code specific settings
+├── Plans.md               # Task management (shared)
+├── .cursor-cc-version     # Version tracking
+├── .cursor/
+│   └── commands/          # Cursor PM commands
+│       ├── start-session.md
+│       ├── handoff-to-claude.md
+│       ├── review-cc-work.md
+│       ├── plan-with-cc.md
+│       └── project-overview.md
+└── .claude/
+    ├── rules/             # Workflow rules (v0.4.0+)
+    │   ├── workflow.md
+    │   └── coding-standards.md
+    └── memory/            # Session memory
+        ├── session-log.md
+        ├── decisions.md
+        └── patterns.md
+```
 
 ### Step 3: Start with Cursor
 
@@ -79,7 +98,7 @@ When implementation is needed, Cursor outputs a task for Claude Code.
 │  • Review       │ ◄──────────────────► │  • Test         │
 │  • Prod deploy  │                      │  • Staging      │
 └────────┬────────┘                      └────────┬────────┘
-         │   /handoff-to-claude                        │
+         │   /handoff-to-claude                   │
          └───────────────────────────────────────►│
          │◄───────────────────────────────────────┘
          │   /handoff-to-cursor
@@ -121,6 +140,28 @@ When implementation is needed, Cursor outputs a task for Claude Code.
 
 ---
 
+## Features
+
+### Core Features
+- **2-Agent Workflow**: PM/Worker separation with clear responsibilities
+- **Safety First**: dry-run mode by default, protected branches, 3-retry rule
+- **VibeCoder Friendly**: Natural language interface for non-technical users
+- **Incremental Updates**: `/update-2agent` for seamless version upgrades
+
+### v0.4.0+ New Features
+- **Claude Rules** (`.claude/rules/`): Conditional rules with YAML frontmatter `paths:` support
+- **Plugin Hooks** (`hooks/hooks.json`): SessionStart and PostToolUse hooks for automation
+- **Named Sessions**: Use `/rename {name}` and `/resume {name}` for session tracking
+- **Session Memory** (`.claude/memory/`): Persist decisions, patterns, and session logs
+- **CI Consistency Check**: Automated validation of plugin integrity
+- **Self-Healing CI**: `scripts/ci/diagnose-and-fix.sh` for automatic issue detection and fixes
+
+### Auto Cleanup (v0.3.7+)
+- PostToolUse hooks for automatic file size monitoring
+- Configurable thresholds via `.cursor-cc-config.yaml`
+
+---
+
 ## Solo Mode (Fallback)
 
 No Cursor? Claude Code works alone too:
@@ -135,14 +176,15 @@ Solo mode is simpler but lacks the PM/Worker separation and cross-review benefit
 
 ---
 
-## Features
+## Updating
 
-- **2-Agent Workflow**: PM/Worker separation with clear responsibilities
-- **Safety First**: dry-run mode by default, protected branches, 3-retry rule
-- **VibeCoder Friendly**: Natural language interface for non-technical users
-- **Auto Cleanup** (v0.3.7+): PostToolUse hooks for automatic file size monitoring
-- **Incremental Updates**: `/update-2agent` for seamless version upgrades
-- **Configurable**: `cursor-cc.config.json` for team-specific settings
+When a new version is released:
+
+```bash
+/update-2agent
+```
+
+This preserves your tasks in Plans.md while updating templates and commands.
 
 ---
 
@@ -153,8 +195,7 @@ Solo mode is simpler but lacks the PM/Worker separation and cross-review benefit
 | [2-Agent Guide](docs/usage-2agent.md) | Full workflow details |
 | [Solo Guide](docs/usage-solo.md) | Claude Code only |
 | [Admin Guide](docs/ADMIN_GUIDE.md) | Team setup, safety config |
-| [Architecture](docs/ARCHITECTURE.md) | Technical internals |
-| [Limitations](docs/LIMITATIONS.md) | Known constraints |
+| [Changelog](CHANGELOG.md) | Version history |
 
 ---
 

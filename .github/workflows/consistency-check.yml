@@ -139,3 +139,21 @@ jobs:
         run: |
           chmod +x ./scripts/ci/check-checklist-sync.sh
           ./scripts/ci/check-checklist-sync.sh
+
+  version-bump:
+    name: Check Version Bump
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify version was bumped
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          chmod +x ./scripts/ci/check-version-bump.sh
+          ./scripts/ci/check-version-bump.sh

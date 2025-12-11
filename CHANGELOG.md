@@ -4,6 +4,33 @@ cursor-cc-plugins のバージョン履歴です。
 
 ---
 
+## [0.4.0] - 2025-12-11
+
+### Added
+- 📁 **`.claude/rules/` ディレクトリサポート**
+  - `workflow.md` - 2-Agent ワークフロールール
+  - `coding-standards.md` - コーディング規約（`paths:` YAML frontmatter で条件適用）
+  - `/setup-2agent` で自動生成、`/update-2agent` で更新
+- 🪝 **Plugin Hooks (`hooks/hooks.json`)**
+  - `${CLAUDE_PLUGIN_ROOT}` 変数でプラグインルートを参照
+  - `SessionStart` フック - セッション開始時に Plans.md ステータス表示
+  - `PostToolUse` フック - ファイルサイズ自動チェック
+- 📛 **Named Sessions**
+  - `/start-session` で `{project}-{feature}-{YYYYMMDD}` 形式のセッション名を生成
+  - `/rename` で名前変更、`/resume <name>` で再開
+- 🔄 **CI 整合性チェック**
+  - `.github/workflows/consistency-check.yml`
+  - テンプレート存在、バージョン同期、Hooks 検証を自動実行
+  - `scripts/ci/check-consistency.sh` でローカル検証も可能
+
+### Changed
+- `/update-2agent` に Phase 5.5（Claude Rules 更新）を追加
+- スキル定義を v0.4.0 対応に更新
+  - `ccp-setup-2agent-files` - Step 4 に rules 配置を追加
+  - `ccp-update-2agent-files` - Step 8 に rules 更新を追加
+
+---
+
 ## [0.3.9] - 2025-12-10
 
 ### Fixed

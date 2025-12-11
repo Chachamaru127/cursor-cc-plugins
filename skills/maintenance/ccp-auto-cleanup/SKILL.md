@@ -4,7 +4,7 @@ description: "ファイルの自動整理・アーカイブを行うスキル"
 metadata:
   skillport:
     category: maintenance
-    tags: [cleanup, archive, rotate, maintenance]
+    tags: [cleanup, archive, rotate, maintenance, prompt-based-hook]
     alwaysApply: false
 ---
 
@@ -36,6 +36,41 @@ Plans.md、session-log.md 等のファイル肥大化を防ぐ自動整理スキ
 | Plans.md | 完了から7日 or 200行超 | 📦 アーカイブへ移動 |
 | session-log.md | 30日経過 or 500行超 | 月別ファイルに分割 |
 | CLAUDE.md | 100行超 | 警告 + 分割提案 |
+
+---
+
+## v0.4.6+ LLM評価型フック
+
+セッション終了時に **Prompt-Based Hook** で賢くクリーンアップを推奨します。
+
+### 仕組み
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Stop Event     │ ──► │  Bash Script    │ ──► │  Claude Haiku   │
+│  (Session End)  │     │  (collect-      │     │  (LLM 評価)     │
+│                 │     │   cleanup-      │     │                 │
+│                 │     │   context.sh)   │     │  推奨判断       │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### 評価基準
+
+LLM は以下の条件で cleanup を推奨します：
+
+1. **完了タスク蓄積**: 10件以上の完了タスク
+2. **古い完了タスク**: 7日以上前に完了したタスクの存在
+3. **Plans.md 肥大化**: 200行超
+4. **Session Log 肥大化**: 500行超
+5. **CLAUDE.md 肥大化**: 100行超（.claude/rules/ への分割を提案）
+
+### 利点
+
+| 従来の Bash Hook | LLM 評価型 Hook |
+|-----------------|-----------------|
+| 行数のみで判定 | タスクの完了日・件数を総合判断 |
+| 硬直的な閾値 | 文脈を理解した柔軟な推奨 |
+| 機械的なメッセージ | 具体的なアクション提案 |
 
 ---
 

@@ -4,6 +4,23 @@ cursor-cc-plugins のバージョン履歴です。
 
 ---
 
+## [0.4.6] - 2025-12-12
+
+### Added
+- 🧠 **Prompt-Based Hook でスマートクリーンアップ推奨**
+  - `Stop` イベントで LLM (Claude Haiku) が cleanup を推奨
+  - `scripts/collect-cleanup-context.sh` - プロジェクト状態を収集
+  - 完了タスク数・日数・ファイルサイズを総合判断
+  - 従来の行数チェックより賢い判断が可能に
+
+### Changed
+- `hooks/hooks.json` に `Stop` フックを追加
+  - Command hook でコンテキスト収集
+  - Prompt hook で LLM 評価
+- `ccp-auto-cleanup` スキルドキュメントを更新
+
+---
+
 ## [0.4.5] - 2025-12-11
 
 ### Added
